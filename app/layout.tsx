@@ -5,7 +5,7 @@ import "@/app/globals.css"
 export const metadata: Metadata = {
   title: "Operating Expense Planner",
   description: "A tool for planning and forecasting operating expenses",
-    generator: 'v0.dev'
+    generator: 'v0.app'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
