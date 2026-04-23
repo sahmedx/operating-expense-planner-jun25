@@ -112,11 +112,6 @@ export const expenseDataService = {
       console.log(`Saving ${version} data to database...`)
       console.log(`Vendors to save: ${data.vendors.length}`)
 
-      // Verify Supabase connection before proceeding
-      if (!db.supabase) {
-        throw new Error("Supabase client is not initialized. Please check your environment variables.")
-      }
-
       // Get current vendors from the database to track deletions
       const currentDbVendors = await db.getVendors()
       const currentVendorIds = new Set(currentDbVendors.map((v) => v.id))
@@ -143,17 +138,7 @@ export const expenseDataService = {
         try {
           console.log(`Processing vendor: ${vendor.name} (${vendor.id})`)
 
-          // Check if vendor exists in the database
-          const { data: existingVendor, error: queryError } = await db.supabase
-            .from("vendors")
-            .select("id")
-            .eq("id", vendor.id)
-            .maybeSingle()
-
-          if (queryError) {
-            console.error(`Error checking if vendor exists: ${queryError.message}`)
-            throw queryError
-          }
+          const existingVendor = currentVendorIds.has(vendor.id) ? { id: vendor.id } : null
 
           let savedVendorId: string
 
@@ -289,11 +274,6 @@ export const expenseDataService = {
     try {
       console.log(`Saving ${vendors.length} vendors to database...`)
 
-      // Verify Supabase connection before proceeding
-      if (!db.supabase) {
-        throw new Error("Supabase client is not initialized. Please check your environment variables.")
-      }
-
       // Get current vendors from the database
       const currentDbVendors = await db.getVendors()
       const currentVendorIds = new Set(currentDbVendors.map((v) => v.id))
@@ -310,17 +290,7 @@ export const expenseDataService = {
         try {
           console.log(`Processing vendor: ${vendor.name} (${vendor.id})`)
 
-          // Check if vendor exists in the database
-          const { data: existingVendor, error: queryError } = await db.supabase
-            .from("vendors")
-            .select("id")
-            .eq("id", vendor.id)
-            .maybeSingle()
-
-          if (queryError) {
-            console.error(`Error checking if vendor exists: ${queryError.message}`)
-            throw queryError
-          }
+          const existingVendor = currentVendorIds.has(vendor.id) ? { id: vendor.id } : null
 
           if (existingVendor) {
             // Update existing vendor
@@ -364,30 +334,13 @@ export const expenseDataService = {
     try {
       console.log(`Saving expense data for ${version}...`)
 
-      // Verify Supabase connection before proceeding
-      if (!db.supabase) {
-        throw new Error("Supabase client is not initialized. Please check your environment variables.")
-      }
-
       // First, verify all vendors exist in the database
       const vendorIds = Object.keys(expenses)
       const existingVendorIds = new Set<string>()
 
-      // Check all vendors in a single query for efficiency
       if (vendorIds.length > 0) {
-        const { data: existingVendors, error: checkError } = await db.supabase
-          .from("vendors")
-          .select("id")
-          .in("id", vendorIds)
-
-        if (checkError) {
-          console.error(`Error checking vendors existence:`, checkError)
-          throw checkError
-        }
-
-        // Create a set of existing vendor IDs
-        existingVendors?.forEach((vendor) => existingVendorIds.add(vendor.id))
-
+        const allVendors = await db.getVendors()
+        allVendors.filter((v) => vendorIds.includes(v.id)).forEach((v) => existingVendorIds.add(v.id))
         console.log(`Found ${existingVendorIds.size} of ${vendorIds.length} vendors in database`)
       }
 
@@ -409,16 +362,7 @@ export const expenseDataService = {
 
       // Delete existing expense data for this version but only for the vendors we're updating
       for (const vendorId of Object.keys(validExpenses)) {
-        const { error: deleteError } = await db.supabase
-          .from("expense_data")
-          .delete()
-          .eq("version", version)
-          .eq("vendor_id", vendorId)
-
-        if (deleteError) {
-          console.error(`Error deleting existing expense data for ${version} and vendor ${vendorId}:`, deleteError)
-          throw deleteError
-        }
+        await db.deleteExpenseData(vendorId, version)
       }
 
       // Prepare expense data for all vendors
@@ -442,18 +386,7 @@ export const expenseDataService = {
       // Save expense data batch
       if (expenseDataBatch.length > 0) {
         console.log(`Saving ${expenseDataBatch.length} expense entries for ${version}`)
-
-        // Process in smaller batches to avoid potential issues
-        const batchSize = 50
-        for (let i = 0; i < expenseDataBatch.length; i += batchSize) {
-          const batch = expenseDataBatch.slice(i, i + batchSize)
-          const { error: insertError } = await db.supabase.from("expense_data").insert(batch)
-
-          if (insertError) {
-            console.error(`Error inserting expense data batch for ${version}:`, insertError)
-            throw insertError
-          }
-        }
+        await db.saveExpenseDataBatch(expenseDataBatch)
       }
 
       console.log(`Successfully saved expense data for ${version}`)

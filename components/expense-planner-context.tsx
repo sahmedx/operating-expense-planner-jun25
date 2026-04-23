@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { expenseDataService } from "@/lib/expense-data-service"
 import { generateVendorCode } from "@/lib/supabase"
-import { db } from "@/lib/supabase"
 
 // First, add these constants at the top of the file, after the imports:
 const CLOSED_PERIODS = ["Jan'25", "Feb'25", "Mar'25"]
@@ -1081,11 +1080,6 @@ export function ExpensePlannerProvider({ children }: { children: ReactNode }) {
       console.log("Saving data to database...")
       console.log("Changed vendors to save:", changeTracking.changedVendors.size)
 
-      // Check if Supabase is initialized
-      if (!db.supabase) {
-        throw new Error("Supabase client is not initialized. Please check your environment variables.")
-      }
-
       // Before saving, ensure all versions have the same vendors
       // This is necessary for data consistency
       setVersionData((prev) => {
@@ -1137,13 +1131,8 @@ export function ExpensePlannerProvider({ children }: { children: ReactNode }) {
         return newVersionData
       })
 
-      // IMPORTANT: Get current vendors from database to avoid accidental deletion
-      const currentDbVendors = await db.getVendors()
-      const currentDbVendorIds = new Set(currentDbVendors.map((v) => v.id))
-
       // Only delete vendors that were explicitly marked for deletion
-      // and filter out any that might have been accidentally included
-      const vendorsToActuallyDelete = Array.from(deletedVendorIds).filter((id) => currentDbVendorIds.has(id)) // Only delete if it exists in DB
+      const vendorsToActuallyDelete = Array.from(deletedVendorIds)
 
       console.log(`Vendors explicitly marked for deletion: ${deletedVendorIds.size}`)
       console.log(`Vendors that will actually be deleted: ${vendorsToActuallyDelete.length}`)
