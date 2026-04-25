@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowDownRight, ArrowUpRight, ChevronDown, ChevronRight, ExternalLink } from "lucide-react"
+import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react"
 
 interface FYEMonthDetail {
   month: string
@@ -153,44 +153,38 @@ export function VendorBreakdownDialog({
                             <TableCell className="text-right text-muted-foreground">
                               {formatCurrency(vendor.budget)}
                             </TableCell>
-                            <TableCell
-                              className={`text-right ${fyeVar < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              <div className="flex items-center justify-end">
-                                {fyeVar < 0 ? (
-                                  <ArrowDownRight className="h-4 w-4 mr-1" />
-                                ) : (
-                                  <ArrowUpRight className="h-4 w-4 mr-1" />
-                                )}
-                                {formatCurrency(Math.abs(fyeVar))}
-                              </div>
+                            <TableCell className="text-right">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                fyeVar < 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {fyeVar < 0 ? "▼ " : "▲ "}{formatCurrency(Math.abs(fyeVar))}
+                              </span>
                             </TableCell>
-                            <TableCell
-                              className={`text-right ${vendor.variance < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {Math.abs(vendor.variancePercent).toFixed(1)}%
+                            <TableCell className="text-right">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                vendor.variance < 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {Math.abs(vendor.variancePercent).toFixed(1)}%
+                              </span>
                             </TableCell>
                           </>
                         ) : (
                           <>
                             <TableCell className="text-right">{formatCurrency(vendor.forecast)}</TableCell>
                             <TableCell className="text-right">{formatCurrency(vendor.budget)}</TableCell>
-                            <TableCell
-                              className={`text-right ${vendor.variance < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              <div className="flex items-center justify-end">
-                                {vendor.variance < 0 ? (
-                                  <ArrowDownRight className="h-4 w-4 mr-1" />
-                                ) : (
-                                  <ArrowUpRight className="h-4 w-4 mr-1" />
-                                )}
-                                {formatCurrency(Math.abs(vendor.variance))}
-                              </div>
+                            <TableCell className="text-right">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                vendor.variance < 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {vendor.variance < 0 ? "▼ " : "▲ "}{formatCurrency(Math.abs(vendor.variance))}
+                              </span>
                             </TableCell>
-                            <TableCell
-                              className={`text-right ${vendor.variance < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {Math.abs(vendor.variancePercent).toFixed(1)}%
+                            <TableCell className="text-right">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                vendor.variance < 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {Math.abs(vendor.variancePercent).toFixed(1)}%
+                              </span>
                             </TableCell>
                           </>
                         )}

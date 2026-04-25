@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { MultiSelect } from "./multi-select"
 import { LoadingOverlay } from "./loading-overlay"
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, BarChart2 } from "lucide-react"
 import {
   Bar,
   BarChart as RechartsBarChart,
   CartesianGrid,
+  LabelList,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -321,7 +322,15 @@ export function SummaryDashboard() {
           {/* Dashboard Header */}
           <div className="border-b bg-background">
             <div className="flex flex-col md:flex-row h-auto md:h-16 items-start md:items-center justify-between p-4">
-              <h1 className="text-lg md:text-xl font-semibold mb-2 md:mb-0">Forecast vs Budget Summary</h1>
+              <div className="flex items-center gap-2 mb-2 md:mb-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+                  <BarChart2 className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-lg md:text-xl font-semibold leading-tight">Forecast vs Budget Summary</h1>
+                  <p className="text-xs text-muted-foreground">FY 2025 · Operating Expenses</p>
+                </div>
+              </div>
             </div>
 
             {/* Filters */}
@@ -403,9 +412,9 @@ export function SummaryDashboard() {
           <div className="flex-1 overflow-auto p-4">
             {/* Summary Cards — 4 columns */}
             <div className="grid gap-4 grid-cols-1 md:grid-cols-4 mb-6">
-              <Card>
+              <Card className="border-2 border-blue-400">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Live Forecast</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Live Forecast</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(summaryData.forecastTotal)}</div>
@@ -416,9 +425,9 @@ export function SummaryDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-emerald-500">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Budget</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Budget</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(summaryData.budgetTotal)}</div>
@@ -429,20 +438,16 @@ export function SummaryDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className={`border-2 ${summaryData.variance < 0 ? "border-emerald-500" : "border-rose-400"}`}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Variance (F vs B)</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Variance (F vs B)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center">
-                    <div
-                      className={`text-2xl font-bold ${summaryData.variance < 0 ? "text-green-600" : "text-red-600"}`}
-                    >
+                    <div className={`text-2xl font-bold ${summaryData.variance < 0 ? "text-emerald-600" : "text-rose-600"}`}>
                       {formatCurrency(summaryData.variance)}
                     </div>
-                    <div
-                      className={`ml-2 flex items-center ${summaryData.variance < 0 ? "text-green-600" : "text-red-600"}`}
-                    >
+                    <div className={`ml-2 flex items-center ${summaryData.variance < 0 ? "text-emerald-600" : "text-rose-600"}`}>
                       {summaryData.variance < 0 ? (
                         <ArrowDownRight className="h-4 w-4 mr-1" />
                       ) : (
@@ -457,15 +462,13 @@ export function SummaryDashboard() {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-2 border-violet-400">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Full Year Estimate</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Full Year Estimate</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{formatCurrency(summaryData.fyeTotal)}</div>
-                  <div
-                    className={`flex items-center mt-1 text-xs font-medium ${summaryData.fyeVsBudgetVariance < 0 ? "text-green-600" : "text-red-600"}`}
-                  >
+                  <div className={`flex items-center mt-1 text-xs font-medium ${summaryData.fyeVsBudgetVariance < 0 ? "text-emerald-600" : "text-rose-600"}`}>
                     {summaryData.fyeVsBudgetVariance < 0 ? (
                       <ArrowDownRight className="h-3 w-3 mr-0.5" />
                     ) : (
@@ -536,15 +539,23 @@ export function SummaryDashboard() {
                             <td className="py-2 px-4">{item.name}</td>
                             <td className="text-right py-2 px-4">{formatCurrency(displayAmount)}</td>
                             <td className="text-right py-2 px-4">{formatCurrency(item.budget)}</td>
-                            <td
-                              className={`text-right py-2 px-4 ${displayVariance < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {formatCurrency(displayVariance)}
+                            <td className="text-right py-2 px-4">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                displayVariance < 0
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}>
+                                {displayVariance < 0 ? "▼ " : "▲ "}{formatCurrency(Math.abs(displayVariance))}
+                              </span>
                             </td>
-                            <td
-                              className={`text-right py-2 px-4 ${displayVariance < 0 ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {displayVariancePct.toFixed(1)}%
+                            <td className="text-right py-2 px-4">
+                              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                displayVariance < 0
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}>
+                                {displayVariancePct.toFixed(1)}%
+                              </span>
                             </td>
                             <td className="text-center py-2 px-4">
                               <Button
@@ -593,7 +604,7 @@ export function SummaryDashboard() {
                       <RechartsBarChart
                         data={glAccountBreakdown}
                         layout="vertical"
-                        margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
+                        margin={{ top: 20, right: 60, left: 120, bottom: 20 }}
                         barGap={10}
                       >
                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
@@ -625,7 +636,14 @@ export function SummaryDashboard() {
                             radius={[0, 4, 4, 0]}
                             cursor="pointer"
                             onClick={(data) => handleGLAccountClick(data.name)}
-                          />
+                          >
+                            <LabelList
+                              dataKey="forecast"
+                              position="right"
+                              formatter={(v: number) => v > 0 ? `${(v / 1000).toFixed(0)}k` : ""}
+                              style={{ fontSize: 11, fill: "#6b7280" }}
+                            />
+                          </Bar>
                         ) : (
                           <Bar
                             dataKey="fye"
@@ -634,7 +652,14 @@ export function SummaryDashboard() {
                             radius={[0, 4, 4, 0]}
                             cursor="pointer"
                             onClick={(data) => handleGLAccountClick(data.name)}
-                          />
+                          >
+                            <LabelList
+                              dataKey="fye"
+                              position="right"
+                              formatter={(v: number) => v > 0 ? `${(v / 1000).toFixed(0)}k` : ""}
+                              style={{ fontSize: 11, fill: "#6b7280" }}
+                            />
+                          </Bar>
                         )}
                         <Bar
                           dataKey="budget"
@@ -643,7 +668,14 @@ export function SummaryDashboard() {
                           radius={[0, 4, 4, 0]}
                           cursor="pointer"
                           onClick={(data) => handleGLAccountClick(data.name)}
-                        />
+                        >
+                          <LabelList
+                            dataKey="budget"
+                            position="right"
+                            formatter={(v: number) => v > 0 ? `${(v / 1000).toFixed(0)}k` : ""}
+                            style={{ fontSize: 11, fill: "#6b7280" }}
+                          />
+                        </Bar>
                       </RechartsBarChart>
                     </ResponsiveContainer>
                   </ChartContainer>
